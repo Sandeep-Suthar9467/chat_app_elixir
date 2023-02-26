@@ -27,6 +27,10 @@ defmodule ChatAppWeb.Router do
     # get "/rooms/:id/edit", RoomController, :edit
     resources("/rooms", RoomController)
 
+    resources("/sessions", SessionController, only: [:new, :create])
+    resources("/registration", RegistrationController, only: [:new, :create])
+    delete "/sign_out", SessionController, :delete
+
   end
 
   # Other scopes may use custom stacks.
