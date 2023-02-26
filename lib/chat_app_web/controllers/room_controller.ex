@@ -1,7 +1,11 @@
 defmodule ChatAppWeb.RoomController do
   use ChatAppWeb, :controller
   alias ChatApp.Talk.Room
-  alias ChatApp.Talk.Talk
+  alias ChatApp.Talk
+  alias ChatAppWeb.Plugs.AuthUser
+  plug AuthUser when action not in [:index]
+  # plug :authorize_user when action in [:edit, :update, :delete]
+
   def index(conn, _params) do
     rooms = Talk.list_rooms()
     render(conn, "index.html", rooms: rooms)
@@ -13,7 +17,7 @@ defmodule ChatAppWeb.RoomController do
   end
 
   def create(conn, %{"room" => room_params}) do
-    case Talk.create_room(room_params) do
+    case Talk.create_room(conn.assigns.current_user, room_params) do
       {:ok, room} ->
         conn
         |> put_flash(:info, "Room Created!")
@@ -57,5 +61,30 @@ defmodule ChatAppWeb.RoomController do
     conn
       |> put_flash(:info, "Room Deleted")
       |> redirect(to: Routes.room_path(conn, :index))
+  end
+
+  defp auth_user(conn, _params) do
+    if conn.assigns.signed_in? do
+      conn
+    else
+      conn
+        |> put_flash(:error, "You need to signed in")
+        |> redirect(to: Routes.session_path(conn, :new))
+        |> halt()
+    end
+  end
+
+  defp authorize_user(conn, _params) do
+    %{params: %{"id" => room_id}} = conn
+    room = Talk.get_room!(room_id)
+
+    if conn.assigns.current.user_id == room.user_id do
+      conn
+    else
+      conn
+        |> put_flash(:error, "You are not authorized")
+        |> redirect(to: Routes.room_path(conn, :index))
+        |> halt()
+    end
   end
 end

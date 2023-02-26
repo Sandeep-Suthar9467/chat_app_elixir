@@ -1,4 +1,4 @@
-defmodule ChatApp.Talk.Talk do
+defmodule ChatApp.Talk do
   alias ChatApp.Repo
   alias ChatApp.Talk.Room
 
@@ -9,10 +9,12 @@ defmodule ChatApp.Talk.Talk do
   def change_room(%Room{} =room) do
     Room.changeset(room, %{})
   end
-  def create_room(attrs \\ %{}) do
-    %Room{}
-     |> Room.changeset(attrs)
-     |> Repo.insert()
+  def create_room(user, attrs \\ %{}) do
+    user
+      |> Ecto.build_assoc(:rooms)
+      |> Room.changeset(attrs)
+      |> Repo.insert()
+
   end
   def update_room(%Room{} = room, attrs) do
     room
