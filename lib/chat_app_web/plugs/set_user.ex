@@ -13,6 +13,7 @@ defmodule ChatAppWeb.Plugs.SetUser do
     cond do
       current_user = user_id && Repo.get(User, user_id) ->
         token = Phoenix.Token.sign(conn, "user token", user_id)
+        IO.inspect(token)
 
         conn
         |> assign(:current_user, current_user)

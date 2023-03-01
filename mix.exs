@@ -50,7 +50,9 @@ defmodule ChatApp.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:comeonin, "~> 5.1"},
-      {:bcrypt_elixir, "~>2.0"}
+      {:bcrypt_elixir, "~>2.0"},
+      {:socket, "~> 0.3"},
+      {:elixir_janus, github: "software-mansion-labs/elixir-janus"}
     ]
   end
 
