@@ -7,9 +7,9 @@
 // Pass the token on params as below. Or remove it
 // from the params if you are not using authentication.
 import {
-    Socket,
+    Socket,Presence
   } from "phoenix"
-  
+  console.log(window.userToken)
   let socket = new Socket("/socket", {
     params: {
       token: window.userToken
@@ -33,7 +33,7 @@ import {
       .receive("ok", resp => {
         console.log("Joined successfully", resp)
         console.log(resp, roomId)
-        // resp.messages.reverse().map(msg => displayMessage(msg))
+        resp.messages.reverse().map(msg => displayMessage(msg))
       })
   
       .receive("error", resp => {
@@ -44,17 +44,19 @@ import {
         console.log(message)
         displayMessage(message)
       })
+  
+      // when user joins the room , will get state 
     channel.on("presence_state", state => {
       presences = Presence.syncState(presences, state)
       console.log(presences)
       displayUsers(presences)
     })
-  
-//     channel.on("presence_diff", diff => {
-//       presences = Presence.syncDiff(presences, diff)
-//       console.log(presences)
-//       displayUsers(presences)
-//     })
+    // some user left the room , other users get updated state.
+    channel.on("presence_diff", diff => {
+      presences = Presence.syncDiff(presences, diff)
+      console.log(presences)
+      displayUsers(presences)
+    })
   
     document.querySelector('#message-form').addEventListener('submit', (e) => {
       e.preventDefault()
@@ -67,34 +69,34 @@ import {
       input.value = ''
     })
   
-//     document.querySelector('#message-body').addEventListener('keydown', () => {
-//       userStartsTyping()
-//       clearTimeout(typingTimer)
-//     })
-//     document.querySelector('#message-body').addEventListener('keyup', () => {
-//       clearTimeout(typingTimer)
-//       typingTimer = setTimeout(userStopTyping, timeout)
-//     })
+    document.querySelector('#message-body').addEventListener('keydown', () => {
+      userStartsTyping()
+      clearTimeout(typingTimer)
+    })
+    document.querySelector('#message-body').addEventListener('keyup', () => {
+      clearTimeout(typingTimer)
+      typingTimer = setTimeout(userStopTyping, timeout)
+    })
   
-//     const userStartsTyping = () => {
-//       if (userTyping) {
-//         return
-//       }
+    const userStartsTyping = () => {
+      if (userTyping) {
+        return
+      }
   
-//       userTyping = true
-//       channel.push('user:typing', {
-//         typing: true
-//       })
-//     }
+      userTyping = true
+      channel.push('user:typing', {
+        typing: true
+      })
+    }
   
-//     const userStopTyping = () => {
-//       clearTimeout(typingTimer)
-//       userTyping = false
+    const userStopTyping = () => {
+      clearTimeout(typingTimer)
+      userTyping = false
   
-//       channel.push('user:typing', {
-//         typing: false
-//       })
-//     }
+      channel.push('user:typing', {
+        typing: false
+      })
+    }
   
     const displayMessage = (msg) => {
       console.log('display message')
@@ -103,23 +105,23 @@ import {
       document.querySelector('#display').innerHTML += template
     }
   
-//     const displayUsers = (presences) => {
-//       let usersOnline = Presence.list(presences, (_id, {
-//         metas: [
-//           user, ...rest
-//         ]
-//       }) => {
-//         var typingTemplate = ''
-//         if (user.typing) {
-//           typingTemplate = ' <i>(Typing...)</i>'
-//         }
-//         return `
-//           <div id="user-${user.user_id}"><strong class="text-secondary">${user.username}</strong> ${typingTemplate}</div>
-//         `
-//       }).join("")
+    const displayUsers = (presences) => {
+      let usersOnline = Presence.list(presences, (_id, {
+        metas: [
+          user, ...rest
+        ]
+      }) => {
+        var typingTemplate = ''
+        if (user.typing) {
+          typingTemplate = ' <i>(Typing...)</i>'
+        }
+        return `
+          <div id="user-${user.user_id}"><strong class="text-secondary">${user.username}</strong>${typingTemplate}</div>
+        `
+      }).join("")
   
-//       document.querySelector('#users-online').innerHTML = usersOnline
-//     }
+      document.querySelector('#users-online').innerHTML = usersOnline
+    }
   
 //   }
   
